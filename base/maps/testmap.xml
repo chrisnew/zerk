@@ -1,0 +1,25 @@
+<zerk-map version="0.1.0">
+   	<entities>
+   	    <PlayerSpawn>
+   	        <position>
+   	            <x>1</x>
+   	            <y>1</y>
+   	        </position>
+   	    </PlayerSpawn>
+   	</entities>
+   	<areas>
+        <wall>
+            <start>
+                <x>1</x>
+                <y>1</y>
+            </start>
+            <stop>
+                <x>1</x>
+                <y>1</y>
+            </stop>
+        </wall>
+   	</areas>
+   	<script>
+   	    
+   	</script>
+</zerk-map>
