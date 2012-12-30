@@ -69,6 +69,21 @@ public class Test {
 			}
 		});
 
+		new LocalInputCommand("lt3", new ConsoleCommand() {
+			@Override
+			public void call(String[] args) {
+				Line2D l1 = new Line2D(0, 4, 4, 0);
+				Line2D l2 = new Line2D(0, 2, 2, 0);
+
+				if (l1.parallelTo(l2)) {
+					Console.info("parallel.");
+
+				} else {
+					Console.info("not parallel.");
+				}
+			}
+		});
+
 		new LocalInputCommand("at1", new ConsoleCommand() {
 
 			@Override

@@ -300,7 +300,6 @@ public class Server {
 
 	public static void start(int port) {
 		try {
-			// serverSocket = new DatagramSocket(port);
 			if (serverSocket == null) {
 				serverSocket = channel.socket();
 				serverSocket.bind(new InetSocketAddress(port));

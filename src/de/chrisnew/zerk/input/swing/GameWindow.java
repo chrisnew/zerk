@@ -37,9 +37,9 @@ public class GameWindow extends JFrame {
 
 	protected void runCommand() {
 		String cmd = textField.getText();
+		textField.setText("");
 		writeMessage("> " + cmd);
 		LocalInputCommand.runCommand(cmd);
-		textField.setText("");
 	}
 
 	public GameWindow() {

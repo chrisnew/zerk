@@ -1,8 +1,5 @@
 package de.chrisnew.zerk.game;
 
-import java.util.List;
-
-import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.math.Rectangle;
 import de.chrisnew.zerk.math.Vector2D;
 
@@ -31,7 +28,7 @@ public class Area extends Rectangle {
 		this.gameMap = gameMap;
 	}
 
-	public List<BaseEntity> getEntities() {
+	public EntityCollection getEntities() {
 		return getGameMap().getEntitiesInArea(this);
 	}
 }

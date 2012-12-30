@@ -1,7 +1,6 @@
 package de.chrisnew.zerk.game;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.chrisnew.zerk.game.entities.BaseEntity;
@@ -12,12 +11,19 @@ import de.chrisnew.zerk.game.sandbox.Sandbox;
 import de.chrisnew.zerk.math.Line2D;
 import de.chrisnew.zerk.math.Vector2D;
 
+/**
+ * GameMap is the hub for areas, entities and walls.
+ *
+ * @author CR
+ *
+ */
 public class GameMap {
 	private final AtomicInteger entityIdCounter = new AtomicInteger();
-	private final List<Area> areas = new LinkedList<>();
-	private final EntityCollection entities = new EntityCollection();
-	private final List<Line2D> walls = new LinkedList<>();
 	private final Sandbox sandbox = new Sandbox(this);
+
+	private final AreaCollection areas = new AreaCollection();
+	private final EntityCollection entities = new EntityCollection();
+	private final WallCollection walls = new WallCollection();
 
 	private String name = "";
 
@@ -29,7 +35,7 @@ public class GameMap {
 		this.name = name;
 	}
 
-	public List<Area> getAreas() {
+	public AreaCollection getAreas() {
 		return areas;
 	}
 
@@ -51,7 +57,7 @@ public class GameMap {
 		ps.setPosition(1, 1);
 		addEntity(ps);
 
-		addWall(new Line2D(0, 2, 10, 2));
+		addWall(new Wall(0, 2, 10, 2));
 
 		Book b1 = new Book();
 		b1.setPosition(1, 3);
@@ -71,7 +77,7 @@ public class GameMap {
 		a1.setAreaName("Home");
 		addArea(a1);
 
-		getSandbox().loadScript("Console.info('test: ' + GameMap.getEntity('book1').getPosition());");
+//		getSandbox().loadScript("Console.info('test: ' + GameMap.getEntity('book1').getPosition());");
 	}
 
 	public void addArea(Area area) {
@@ -88,15 +94,15 @@ public class GameMap {
 			be.setId(createEntityId());
 		}
 
-//		entities.put(be.getId(), be);
 		entities.add(be);
 	}
 
-	public void addWall(Line2D wall) {
+	public void addWall(Wall wall) {
 		walls.add(wall);
 	}
 
-	public void removeWall(Line2D wall) {
+	public void removeWall(Wall wall) {
+		// TODO: clean up
 		for (Line2D w : new LinkedList<Line2D>(walls)) {
 			if (w.equals(wall)) {
 				walls.remove(w);
@@ -104,36 +110,36 @@ public class GameMap {
 		}
 	}
 
-	public boolean isVisibleFor(Vector2D beholderPosition, Vector2D objectPosition) { // FIXME
-		Line2D traceLine = new Line2D(beholderPosition, objectPosition);
-
-		for (Line2D w : walls) {
-			if (w.intersects(traceLine)) { // || w.isPointOnLine(objectPosition)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	public boolean isVisibleFor(BaseEntity beholder, BaseEntity object) {
-		return isVisibleFor(beholder.getPosition(), object.getPosition());
-	}
+//	public boolean isVisibleFor(Vector2D beholderPosition, Vector2D objectPosition) { // FIXME
+//		Line2D traceLine = new Line2D(beholderPosition, objectPosition);
+//
+//		for (Line2D w : walls) {
+//			if (w.intersects(traceLine)) { // || w.isPointOnLine(objectPosition)) {
+//				return false;
+//			}
+//		}
+//
+//		return true;
+//	}
+//
+//	public boolean isVisibleFor(BaseEntity beholder, BaseEntity object) {
+//		return isVisibleFor(beholder.getPosition(), object.getPosition());
+//	}
 
 	private int createEntityId() {
 		return entityIdCounter.incrementAndGet();
 	}
 
-	public List<BaseEntity> getEntitiesInArea(Area area) {
-		List<BaseEntity> list = new LinkedList<>();
+	public EntityCollection getEntitiesInArea(Area area) {
+		EntityCollection ec = new EntityCollection();
 
 		for (BaseEntity entity : getEntities()) {
 			if (area.isPointInArea(entity.getPosition())) {
-				list.add(entity);
+				ec.add(entity);
 			}
 		}
 
-		return list;
+		return ec;
 	}
 
 	public Area getAreaByEntity(BaseEntity entity) {
@@ -155,7 +161,6 @@ public class GameMap {
 	}
 
 	public BaseEntity getEntityById(int id) {
-//		return entities.get(id);
 		return entities.getEntityById(id);
 	}
 
@@ -170,11 +175,10 @@ public class GameMap {
 	}
 
 	public boolean doesEntityExist(BaseEntity other) {
-//		return entities.containsKey(other.getId());
 		return entities.hasEntityById(other.getId());
 	}
 
-	public List<Line2D> getWalls() {
+	public WallCollection getWalls() {
 		return walls;
 	}
 

@@ -21,11 +21,6 @@ import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
 
 public class WorldState {
-
-//	private static String currentMapName = "built-in.map";
-
-	//private static final Set<Player> playerList = java.util.Collections.synchronizedSet(new HashSet<Player>());
-
 	private static final Map<Integer, Player> playerList = new ConcurrentHashMap<>();
 
 	public static Player getPlayerByCommandPacket(CommandPacket dp) {
@@ -116,7 +111,6 @@ public class WorldState {
 				playerEntity.setPosition(position);
 			}
 
-//			playerList.add(player);
 			playerList.put(player.getPlayerUniqueId(), player);
 
 			addEntity(playerEntity);
@@ -153,14 +147,12 @@ public class WorldState {
 
 
 	public static void addEntity(BaseEntity entity) {
-//		if (entities.containsKey(entity.getId())) {
 		if (getGameMap().doesEntityExist(entity)) {
 			Console.warn("Entity already in world!");
 
 			return;
 		}
 
-//		entities.put(entity.getId(), entity);
 		getGameMap().addEntity(entity.getId(), entity);
 
 		entity.spawn();
@@ -171,10 +163,7 @@ public class WorldState {
 	private static final GameMap gameMap = new GameMap();
 
 	public static synchronized void loadMap(String mapName) {
-//		entities.clear();
-
 		gameMap.load(mapName);
-//		entities.putAll(gameMap.getEntities());
 	}
 
 	public static String getCurrentMapName() {
@@ -198,8 +187,6 @@ public class WorldState {
 	}
 
 	public static void removeEntity(BaseEntity entity) {
-//		entities.remove(entity.getId());
-
 		getGameMap().removeEntityById(entity.getId());
 
 		// let the clients know, that an entity has been removed
@@ -218,8 +205,7 @@ public class WorldState {
 	}
 
 	public static List<BaseEntity> getEntityList() {
-//		return new LinkedList<>(entities.values());
-		return new LinkedList<>(getGameMap().getEntities()); //.values());
+		return new LinkedList<>(getGameMap().getEntities());
 	}
 
 	protected static Physics physics = new Physics(gameMap);
@@ -247,7 +233,6 @@ public class WorldState {
 	}
 
 	public static boolean isEntityInWorld(BaseEntity other) {
-//		return entities.containsKey(other.getId());
 		return getGameMap().doesEntityExist(other);
 	}
 

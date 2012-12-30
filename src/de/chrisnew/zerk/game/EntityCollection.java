@@ -1,14 +1,17 @@
 package de.chrisnew.zerk.game;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.LinkedList;
+import java.util.List;
 
 import de.chrisnew.zerk.game.entities.BaseEntity;
 
 public class EntityCollection implements Collection<BaseEntity> {
 
-	private final ConcurrentSkipListSet<BaseEntity> backend = new ConcurrentSkipListSet<>();
+//	private final ConcurrentSkipListSet<BaseEntity> backend = new ConcurrentSkipListSet<>();
+	private final List<BaseEntity> backend = Collections.synchronizedList(new LinkedList<BaseEntity> ());
 
 	@Override
 	public int size() {

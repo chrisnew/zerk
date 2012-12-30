@@ -60,7 +60,7 @@ public class Vector2D {
 	}
 
 	public boolean isNearby(Vector2D other) {
-		return substract(other).length() < 3;
+		return substract(other).length() <= 3;
 	}
 
 	@Override
@@ -68,8 +68,20 @@ public class Vector2D {
 		return "[" + getX() + ", " + getY() + "]";
 	}
 
+	public Vector2D scale(double factor) {
+		return scale((float) factor);
+	}
+
 	public Vector2D scale(float factor) {
 		return new Vector2D(getX() * factor, getY() * factor);
+	}
+
+	public String toTextRelatively() {
+		if (getX() == 0 && getY() == 0) {
+			return "here";
+		}
+
+		return toText();
 	}
 
 	public String toText() {
@@ -105,5 +117,19 @@ public class Vector2D {
 		}
 
 		return sb.toString();
+	}
+
+	public double dotProduct(Vector2D other) {
+		return getX() * other.getY() - getY() * other.getX();
+	}
+
+	/**
+	 *
+	 * @param other null
+	 * @return
+	 */
+	// CR: other's Z would be zero, so we ignore other at all (other = null)
+	public Vector2D crossProduct(Vector2D other) {
+		return new Vector2D(getY(), -getX());
 	}
 }

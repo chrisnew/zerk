@@ -1,7 +1,5 @@
 package de.chrisnew.zerk.game;
 
-import java.util.Collections;
-
 import de.chrisnew.zerk.Console;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.server.WorldState;
@@ -23,7 +21,7 @@ public class Game {
 	}
 
 	public static void thinkLogic() {
-		for (BaseEntity entity : Collections.synchronizedList(WorldState.getEntityList())) {
+		for (BaseEntity entity : WorldState.getEntityList()) {
 			entity.think();
 		}
 	}

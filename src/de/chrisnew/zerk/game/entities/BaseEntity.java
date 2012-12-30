@@ -3,6 +3,8 @@ package de.chrisnew.zerk.game.entities;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.chrisnew.zerk.client.Client;
+import de.chrisnew.zerk.game.entities.annotation.AttributeGetter;
+import de.chrisnew.zerk.game.entities.annotation.AttributeSetter;
 import de.chrisnew.zerk.math.Vector2D;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
@@ -79,18 +81,6 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 
 	}
 
-//	final public void use(BaseEntity other) {
-//		Client.sendDataPacket(
-//			new DataPacket(PacketClass.ENTITY_USE_ENTITY, 0)
-//				.writeEntity(this)
-//				.writeEntity(other)
-//		);
-//	}
-//
-//	public void useOffline(BaseEntity other) {
-//
-//	}
-
 	public boolean canTalk() {
 		return false;
 	}
@@ -99,10 +89,12 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 
 	}
 
+	@AttributeGetter("health")
 	public int getHealth() {
 		return health;
 	}
 
+	@AttributeSetter("health")
 	public void setHealth(int health) {
 		this.health = health;
 	}
@@ -118,24 +110,18 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	public void setPosition(float x, float y) {
 		setPosition(new Vector2D(x, y));
 	}
-//
-//	final public void removeFromWorld() {
-//		WorldState.removeEntity(this);
-//	}
-//
-//	final public void addToWorld() {
-//		WorldState.addEntity(this);
-//		spawn();
-//	}
 
+	@AttributeGetter("name")
 	public String getName() {
 		return name;
 	}
 
+	@AttributeSetter("name")
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	@AttributeGetter("id")
 	final public int getId() {
 		return entityId;
 	}

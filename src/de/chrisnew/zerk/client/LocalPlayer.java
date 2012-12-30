@@ -8,12 +8,15 @@ import de.chrisnew.zerk.Console;
 import de.chrisnew.zerk.ConsoleCommand;
 import de.chrisnew.zerk.client.Client.ClientState;
 import de.chrisnew.zerk.game.Area;
+import de.chrisnew.zerk.game.EntityCollection;
 import de.chrisnew.zerk.game.VisibleEntity;
+import de.chrisnew.zerk.game.Wall;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.game.entities.InventoryItem;
 import de.chrisnew.zerk.game.entities.Player;
 import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.input.swing.GameWindow;
+import de.chrisnew.zerk.math.Line2D;
 import de.chrisnew.zerk.math.Vector2D;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
@@ -25,6 +28,66 @@ public class LocalPlayer {
 	protected static int playerUniqueId = 0;
 
 	public static void init() {
+		new LocalInputCommand("gogo", new ConsoleCommand() {
+			@Override
+			public void call(String[] args) {
+				if (args.length == 1) {
+					Console.info(args[0] + " <direction sequence>");
+					Console.info(" are you familiar with 'go'?\n then concatenate the first letter of your directions to a sequence\n like nnws for north, north, west, south.");
+
+					return;
+				}
+
+				Console.info("Walking..");
+
+				for (int i = 0, j = args[1].length(); i != j; i++) {
+					Vector2D direction = null;
+
+					switch (args[1].charAt(i)) {
+					case 'n':
+						direction = new Vector2D(0, 1);
+						break;
+
+					case 'e':
+						direction = new Vector2D(1, 0);
+						break;
+
+					case 's':
+						direction = new Vector2D(0, -1);
+						break;
+
+					case 'w':
+						direction = new Vector2D(-1, 0);
+						break;
+					}
+
+					if (direction == null) {
+						continue;
+					}
+
+					Vector2D newPos = playerEntity.getPosition().add(direction);
+
+					// FIXME: actually we need to send the sequence to the server to evaluate if it's correct.
+					// FIXME: sleep blocks Swing. we need to walk asynchroneously.
+					if (Client.getPhysics().tryEntityWalkTo(playerEntity, newPos)) {
+						Client.sendCommandPacket(new CommandPacket(PacketClass.ENTITY_C2S_NPC_WALKBY).writeInteger(playerEntity.getId()).writeVector2D(direction));
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+						}
+
+						Console.info(".. " + newPos.toText());
+					} else {
+						Console.info("Oh, impassible way, stopping walking.");
+
+						break;
+					}
+				}
+
+				Console.info("done!");
+			}
+		}, ClientState.CONNECTED);
+
 		new LocalInputCommand("go", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
@@ -65,7 +128,7 @@ public class LocalPlayer {
 
 				Vector2D newPos = playerEntity.getPosition().add(direction);
 
-				if (Client.getPhysics().tryEntityWalkTo(playerEntity, newPos)) { // FIXME
+				if (Client.getPhysics().tryEntityWalkTo(playerEntity, newPos)) {
 					Client.sendCommandPacket(new CommandPacket(PacketClass.ENTITY_C2S_NPC_WALKBY).writeInteger(playerEntity.getId()).writeVector2D(direction));
 
 					Console.info("I went to " + newPos.toText());
@@ -102,7 +165,7 @@ public class LocalPlayer {
 		new LocalInputCommand("use", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
-				List<BaseEntity> entities = Client.getEntityList();
+				EntityCollection entities = Client.getEntities();
 
 				boolean usedSomething = false;
 
@@ -111,8 +174,8 @@ public class LocalPlayer {
 						continue;
 					}
 
-					if (entity.getPosition().substract(playerEntity.getPosition()).length() <= 3 && Client.getGameMap().isVisibleFor(playerEntity, entity)) {
-						Client.sendCommandPacket(new CommandPacket(PacketClass.ENTITY_USE_ENTITY)/* .writeEntity(playerEntity)*/.writeEntity(entity));
+					if (entity.getPosition().substract(playerEntity.getPosition()).length() <= 3 && Client.getPhysics().isAccessibleForUsage(playerEntity, entity)) {
+						Client.sendCommandPacket(new CommandPacket(PacketClass.ENTITY_USE_ENTITY).writeEntity(entity));
 
 						usedSomething = true;
 					}
@@ -134,36 +197,51 @@ public class LocalPlayer {
 		new LocalInputCommand("look", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
-				boolean sawSomething = false, doRangeCheck = true;
+				boolean sawSomething = false;
 
 				Area area = Client.getGameMap().getAreaByEntity(playerEntity);
 
-				List<BaseEntity> entities = null;
+				EntityCollection entities = null;
 
 				if (area != null) {
 					Console.info("You are in " + area.getAreaName() + ".");
 
 					entities = area.getEntities();
-					doRangeCheck = false; // let's see user everything in area
 				} else {
-					entities = Client.getEntityList();
+					entities = Client.getEntities(); // all entities known in world.
+				}
+
+				// HACK: actually we need to let a circle intersect with all walls, let's just check all directions
+				Vector2D pp = playerEntity.getPosition();
+				Line2D pps[] = {
+					new Line2D(pp, pp.add(new Vector2D(0, 3))),
+					new Line2D(pp, pp.add(new Vector2D(3, 0))),
+					new Line2D(pp, pp.add(new Vector2D(0, -3))),
+					new Line2D(pp, pp.add(new Vector2D(-3, 0)))
+				};
+
+				for (Wall wall : Client.getGameMap().getWalls()) {
+					for (Line2D _pp : pps) {
+						if (_pp.intersects(wall)) {
+							Vector2D intersection = wall.getIntersection(_pp);
+
+							Console.info("There's a Wall in " + intersection.substract(pp).toTextRelatively() + ".");
+
+							sawSomething = true;
+						}
+					}
 				}
 
 				for (BaseEntity entity : entities) {
-					if (!(entity instanceof VisibleEntity)) {
+					if (!(entity instanceof VisibleEntity) || (entity instanceof Player)) {
 						continue;
 					}
-
-					if (entity.equals(playerEntity)) {
-						continue;
-					}
-
-					// |posa - posb| = distance
 
 					Vector2D distance = entity.getPosition().substract(playerEntity.getPosition());
 
-					if ((!doRangeCheck || distance.length() < 5) && Client.getGameMap().isVisibleFor(playerEntity, entity)) { // TODO more visibility if light is on
-						Console.info("There's a " + entity.getClassname() + " at " + distance.toText() + ".");
+					if (Client.getPhysics().isAccessibleForUsage(playerEntity, entity)) {
+						Console.info("There's a " + entity.getClassname() + " in " + distance.toTextRelatively() + ".");
+
 						sawSomething = true;
 					}
 				}

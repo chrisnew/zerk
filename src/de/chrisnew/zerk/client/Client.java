@@ -7,12 +7,11 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.chrisnew.zerk.Console;
 import de.chrisnew.zerk.ConsoleCommand;
+import de.chrisnew.zerk.game.EntityCollection;
 import de.chrisnew.zerk.game.Game;
 import de.chrisnew.zerk.game.GameMap;
 import de.chrisnew.zerk.game.entities.BaseEntity;
@@ -384,9 +383,10 @@ public class Client {
 
 //	private static final HashMap<Integer, BaseEntity> clientEntities = new HashMap<>();
 
-	public static List<BaseEntity> getEntityList() {
+	public static EntityCollection getEntities() {
 //		return new LinkedList<>(clientEntities.values());
-		return new LinkedList<>(getGameMap().getEntities()); //.values());
+//		return new LinkedList<>(getGameMap().getEntities()); //.values());
+		return getGameMap().getEntities();
 	}
 
 	protected static final GameMap gameMap = new GameMap();
