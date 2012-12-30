@@ -1,4 +1,4 @@
-package de.chrisnew.zerk.input.swing;
+package de.chrisnew.zerk.game.ui;
 
 import java.awt.Font;
 import java.awt.Toolkit;
@@ -83,7 +83,6 @@ public class GameWindow extends JFrame {
 		btnNewButton.setBounds(524, 420, 98, 23);
 		getContentPane().add(btnNewButton);
 		consoleTextArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
-//		consoleTextArea.setBounds(10, 11, 612, 398);
 		consoleTextArea.setEditable(false);
 
 		JScrollPane consoleTextAreaContainer = new JScrollPane(consoleTextArea);
@@ -107,10 +106,10 @@ public class GameWindow extends JFrame {
 		questList.setBounds(632, 172, 190, 237);
 
 		getContentPane().add(questList);
-//		lblCurrentQuestName.setForeground(Color.WHITE);
 		lblCurrentQuestName.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblCurrentQuestName.setHorizontalAlignment(SwingConstants.CENTER);
 		lblCurrentQuestName.setBounds(632, 420, 190, 22);
+		lblCurrentQuestName.setVisible(false);
 
 		getContentPane().add(lblCurrentQuestName);
 
@@ -132,7 +131,7 @@ public class GameWindow extends JFrame {
 
 	private static GameWindow gameWindow = null;
 	private final JList<Object> questList = new JList<Object>();
-	private final JLabel lblCurrentQuestName = new JLabel("Free Mode");
+	private final JLabel lblCurrentQuestName = new JLabel("Unknown Game Mode");
 
 	public static void init() {
 		try {
@@ -169,6 +168,21 @@ public class GameWindow extends JFrame {
 	public static void updateCompleteClientState() {
 		updateWindowTitle();
 		updateHelperViews();
+		updateGameMode();
+	}
+
+	public static void updateGameMode() {
+		gameWindow.lblCurrentQuestName.setVisible(Client.getClientState() != Client.ClientState.DISCONNECTED);
+
+		switch (LocalPlayer.getGameMode()) {
+		case FREE:
+			gameWindow.lblCurrentQuestName.setText("Free Mode");
+			break;
+
+		case QUEST:
+			gameWindow.lblCurrentQuestName.setText("Quest Mode");
+			break;
+		}
 	}
 
 	public static void updateHelperViews() {

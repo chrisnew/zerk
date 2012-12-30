@@ -1,7 +1,7 @@
 package de.chrisnew.zerk;
 
 import de.chrisnew.zerk.client.Client;
-import de.chrisnew.zerk.input.swing.GameWindow;
+import de.chrisnew.zerk.game.ui.GameWindow;
 
 public class Console {
 	private static void write(String message) {

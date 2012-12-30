@@ -5,8 +5,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.client.LocalPlayer;
+import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;
-import de.chrisnew.zerk.input.swing.GameWindow;
 import de.chrisnew.zerk.server.Server;
 
 public class Zerk {

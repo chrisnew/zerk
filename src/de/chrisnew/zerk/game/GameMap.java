@@ -1,5 +1,6 @@
 package de.chrisnew.zerk.game;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,12 +19,48 @@ import de.chrisnew.zerk.math.Vector2D;
  *
  */
 public class GameMap {
+	public class TextSegment {
+		private String id, title, content;
+
+		public TextSegment(String id, String title, String content) {
+			setId(id);
+			setTitle(title);
+			setContent(content);
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public void setId(String id) {
+			this.id = id;
+		}
+
+		public String getTitle() {
+			return title;
+		}
+
+		public void setTitle(String title) {
+			this.title = title;
+		}
+
+		public String getContent() {
+			return content;
+		}
+
+		public void setContent(String content) {
+			this.content = content;
+		}
+	}
+
 	private final AtomicInteger entityIdCounter = new AtomicInteger();
 	private final Sandbox sandbox = new Sandbox(this);
 
 	private final AreaCollection areas = new AreaCollection();
 	private final EntityCollection entities = new EntityCollection();
 	private final WallCollection walls = new WallCollection();
+
+	private final HashMap<String, TextSegment> textSegments = new HashMap<>();
 
 	private String name = "";
 
@@ -61,6 +98,7 @@ public class GameMap {
 
 		Book b1 = new Book();
 		b1.setPosition(1, 3);
+		b1.setContentId("book1.text");
 		addEntity(b1);
 
 		Book b2 = new Book();
@@ -76,6 +114,8 @@ public class GameMap {
 		Area a1 = new Area(new Vector2D(0, 0), new Vector2D(0, 5), new Vector2D(5, 0));
 		a1.setAreaName("Home");
 		addArea(a1);
+
+		addTextSegment(new TextSegment("book1.text", "Book 1", "Lorem Ipsum Dolor Sit Amet"));
 
 //		getSandbox().loadScript("Console.info('test: ' + GameMap.getEntity('book1').getPosition());");
 	}
@@ -184,5 +224,13 @@ public class GameMap {
 
 	public Sandbox getSandbox() {
 		return sandbox;
+	}
+
+	public TextSegment getTextSegmentById(String contentId) {
+		return textSegments.get(contentId);
+	}
+
+	public void addTextSegment(TextSegment textSegment) {
+		textSegments.put(textSegment.getId(), textSegment);
 	}
 }

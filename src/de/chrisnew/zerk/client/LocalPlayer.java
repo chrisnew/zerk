@@ -14,8 +14,8 @@ import de.chrisnew.zerk.game.Wall;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.game.entities.InventoryItem;
 import de.chrisnew.zerk.game.entities.Player;
+import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;
-import de.chrisnew.zerk.input.swing.GameWindow;
 import de.chrisnew.zerk.math.Line2D;
 import de.chrisnew.zerk.math.Vector2D;
 import de.chrisnew.zerk.net.CommandPacket;
@@ -26,6 +26,21 @@ public class LocalPlayer {
 	protected static String name = "Unnamed";
 
 	protected static int playerUniqueId = 0;
+
+	public static enum LocalGameMode {
+		FREE,
+		QUEST
+	}
+
+	protected static LocalGameMode gameMode = LocalGameMode.FREE;
+
+	public static LocalGameMode getGameMode() {
+		return gameMode;
+	}
+
+	public static void setGameMode(LocalGameMode gameMode) {
+		LocalPlayer.gameMode = gameMode;
+	}
 
 	public static void init() {
 		new LocalInputCommand("gogo", new ConsoleCommand() {
