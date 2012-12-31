@@ -83,7 +83,6 @@ public class LocalPlayer {
 					Vector2D newPos = playerEntity.getPosition().add(direction);
 
 					// FIXME: actually we need to send the sequence to the server to evaluate if it's correct.
-					// FIXME: sleep blocks Swing. we need to walk asynchroneously.
 					if (Client.getPhysics().tryEntityWalkTo(playerEntity, newPos)) {
 						Client.sendCommandPacket(new CommandPacket(PacketClass.ENTITY_C2S_NPC_WALKBY).writeInteger(playerEntity.getId()).writeVector2D(direction));
 						try {

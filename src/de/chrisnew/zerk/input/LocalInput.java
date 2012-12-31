@@ -7,11 +7,10 @@ import java.io.InputStreamReader;
 import de.chrisnew.zerk.Console;
 
 /**
- * @deprecated no longer supporting text console.
  * @author CR
  *
+ * dedicated console for server
  */
-@Deprecated
 public class LocalInput {
 	private static InputStreamReader localConsoleISR = new InputStreamReader(System.in);
 	private static BufferedReader localConsoleReader = new BufferedReader(localConsoleISR);

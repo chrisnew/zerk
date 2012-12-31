@@ -5,7 +5,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.client.LocalPlayer;
+import de.chrisnew.zerk.game.Game;
 import de.chrisnew.zerk.game.ui.GameWindow;
+import de.chrisnew.zerk.game.ui.editor.ZerkEdit;
+import de.chrisnew.zerk.input.LocalInput;
 import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.server.Server;
 
@@ -18,21 +21,37 @@ public class Zerk {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		boolean dedicated = false; // TODO
+
 		Console.init();
-		GameWindow.init();
+
+		if (!dedicated) {
+			GameWindow.init();
+		}
 
 		LocalInputCommand.init();
 
-		LocalPlayer.init();
+		if (!dedicated) {
+			LocalPlayer.init();
+			Client.init();
 
-		Client.init();
+			ZerkEdit.init();
+		}
+
 		Server.init();
+		Game.init();
 
 		Console.debug("Zerk v" + VERSION + " ready.");
 
-		Test.init();
+		LocalInputCommand.runCommand("g_intro");
 
-		Console.info("Welcome to ZERK, please enter 'start' to start the game.");
+		// Test.init();
+
+		if (dedicated) {
+			LocalInput.waitForInput();
+		} else {
+			GameWindow.open();
+		}
 	}
 
 	public static ScheduledExecutorService getScheduler() {

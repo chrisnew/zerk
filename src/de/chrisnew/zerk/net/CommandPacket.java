@@ -291,7 +291,8 @@ public class CommandPacket {
 			BaseEntity be = updatableList != null ? updatableList.getEntityById(id) : null; // updatableList.get(id) : null;
 
 			if (be == null) {
-				Class<? extends BaseEntity> entityClass = (Class<? extends BaseEntity>) Class.forName("de.chrisnew.zerk.game.entities." + classname);
+//				Class<? extends BaseEntity> entityClass = (Class<? extends BaseEntity>) Class.forName("de.chrisnew.zerk.game.entities." + classname);
+				Class<? extends BaseEntity> entityClass = BaseEntity.getEntityClassByClassname(classname);
 
 				be = entityClass.newInstance();
 				be.setId(id);
@@ -308,7 +309,7 @@ public class CommandPacket {
 			be.unserialize(this);
 
 			return be;
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+		} catch (/* ClassNotFoundException | */ InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
 		}

@@ -1,7 +1,10 @@
 package de.chrisnew.zerk.input;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import de.chrisnew.zerk.Console;
 import de.chrisnew.zerk.ConsoleCommand;
@@ -19,7 +22,11 @@ public class LocalInputCommand {
 			public void call(String[] args) {
 				Console.info("Available commands are ");
 
-				for (String name : LocalInputCommand.getAvailableCommands().keySet()) {
+				String commands[] = LocalInputCommand.getAvailableCommands().keySet().toArray(new String[]{});
+
+				Arrays.sort(commands);
+
+				for (String name : commands) {
 					Console.info(" " + name);
 				}
 			}
@@ -29,6 +36,12 @@ public class LocalInputCommand {
 			@Override
 			public void call(String[] args) {
 				Zerk.shutdown();
+			}
+		});
+
+		new LocalInputCommand("exec", new ConsoleCommand() { // TODO: exec <filename>
+			@Override
+			public void call(String[] args) {
 			}
 		});
 	}
@@ -103,5 +116,34 @@ public class LocalInputCommand {
 				lic.call(inputParts);
 			}
 		}
+	}
+
+	public static void runCommandAsync(String input) {
+		commandExecutionQueue.add(input);
+	}
+
+	private static final LinkedBlockingQueue<String> commandExecutionQueue = new LinkedBlockingQueue<>();
+
+	static { // FIXME: make thread destroyable
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					try {
+						String cmd = commandExecutionQueue.poll(60, TimeUnit.SECONDS);
+
+						if (cmd != null) {
+							runCommand(cmd);
+						}
+					} catch (InterruptedException e) {
+					}
+				}
+			}
+		}).start();
+	}
+
+	public static LocalInputCommand getCommandByName(String string) {
+		return localInputCommands.get(string);
 	}
 }

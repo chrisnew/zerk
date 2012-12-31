@@ -39,14 +39,14 @@ public class GameWindow extends JFrame {
 		String cmd = textField.getText();
 		textField.setText("");
 		writeMessage("> " + cmd);
-		LocalInputCommand.runCommand(cmd);
+		LocalInputCommand.runCommandAsync(cmd);
 	}
 
 	public GameWindow() {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				LocalInputCommand.runCommand("quit");
+				LocalInputCommand.runCommandAsync("quit");
 			}
 		});
 
@@ -144,7 +144,7 @@ public class GameWindow extends JFrame {
 
 		gameWindow = new GameWindow();
 
-		gameWindow.setVisible(true);
+//		gameWindow.setVisible(true);
 
 		gameWindow.textField.requestFocusInWindow();
 
@@ -155,6 +155,12 @@ public class GameWindow extends JFrame {
 				gameWindow.consoleTextArea.setText("");
 			}
 		});
+	}
+
+	public static void open() {
+		if (hasGameWindow()) {
+			getGameWindow().setVisible(true);
+		}
 	}
 
 	public static boolean hasGameWindow() {

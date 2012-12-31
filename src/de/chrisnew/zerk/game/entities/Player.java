@@ -4,8 +4,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import de.chrisnew.zerk.game.VisibleEntity;
+import de.chrisnew.zerk.game.entities.annotation.EntityInfo;
 import de.chrisnew.zerk.net.CommandPacket;
 
+@EntityInfo(description="Entity which describes the actual player.")
 public class Player extends NPC implements VisibleEntity {
 	private String name = "Unnamed";
 
@@ -49,10 +51,12 @@ public class Player extends NPC implements VisibleEntity {
 		inventory.add(item);
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

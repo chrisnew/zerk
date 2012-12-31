@@ -62,7 +62,14 @@ public class GameMap {
 
 	private final HashMap<String, TextSegment> textSegments = new HashMap<>();
 
-	private String name = "";
+	private String name = "unnamed";
+
+	public GameMap() {
+	}
+
+	public GameMap(String mapName) {
+		setName(mapName);
+	}
 
 	public String getName() {
 		return name;
@@ -80,13 +87,33 @@ public class GameMap {
 		return entities;
 	}
 
-	public void load(String mapName) {
+	public void reset() {
 		areas.clear();
 		entities.clear();
+		walls.clear();
+	}
 
+	public void load() {
+		reset();
+
+		// TODO
+		loadFakeData();
+	}
+
+	public void load(String mapName) {
 		setName(mapName);
 
-		loadFakeData();
+		load();
+	}
+
+	public void save(String mapName) {
+		setName(mapName);
+
+		save();
+	}
+
+	public void save() {
+		// TODO
 	}
 
 	private void loadFakeData() {
@@ -149,22 +176,6 @@ public class GameMap {
 			}
 		}
 	}
-
-//	public boolean isVisibleFor(Vector2D beholderPosition, Vector2D objectPosition) { // FIXME
-//		Line2D traceLine = new Line2D(beholderPosition, objectPosition);
-//
-//		for (Line2D w : walls) {
-//			if (w.intersects(traceLine)) { // || w.isPointOnLine(objectPosition)) {
-//				return false;
-//			}
-//		}
-//
-//		return true;
-//	}
-//
-//	public boolean isVisibleFor(BaseEntity beholder, BaseEntity object) {
-//		return isVisibleFor(beholder.getPosition(), object.getPosition());
-//	}
 
 	private int createEntityId() {
 		return entityIdCounter.incrementAndGet();

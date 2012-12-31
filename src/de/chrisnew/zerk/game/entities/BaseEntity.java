@@ -1,5 +1,7 @@
 package de.chrisnew.zerk.game.entities;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.chrisnew.zerk.client.Client;
@@ -20,6 +22,22 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	protected Vector2D position = new Vector2D();
 
 	private String name = "";
+
+	private static final Map<String, Class<? extends BaseEntity>> entityClasses = new HashMap<>();
+
+	/*
+	 * register all instanciatable entity classes here:
+	 */
+	static {
+		entityClasses.put("Book", Book.class);
+		entityClasses.put("Dog", Dog.class);
+		entityClasses.put("PlayerSpawn", PlayerSpawn.class);
+		entityClasses.put("Player", Player.class);
+	}
+
+	public static final Class<? extends BaseEntity> getEntityClassByClassname(String classname) {
+		return entityClasses.get(classname);
+	}
 
 	public static enum State {
 		DEAD(0), ALIVE(1);

@@ -2,10 +2,12 @@ package de.chrisnew.zerk.game.entities;
 
 import de.chrisnew.zerk.game.entities.annotation.AttributeGetter;
 import de.chrisnew.zerk.game.entities.annotation.AttributeSetter;
+import de.chrisnew.zerk.game.entities.annotation.EntityInfo;
 import de.chrisnew.zerk.game.ui.BookUI;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.server.WorldState;
 
+@EntityInfo(description="Books can be picked up and stored in player's inventory.")
 public class Book extends InventoryItem {
 	private String title = "Unknown Book";
 	private String contentId = "";

@@ -48,20 +48,10 @@ public class Player {
 		this.remoteAddress = new InetSocketAddress(addr, port);
 	}
 
-	public void sendCommandPacket(CommandPacket dp) { //throws IOException {
+	public void sendCommandPacket(CommandPacket dp) {
 		if (!Server.isServerState(ServerState.OFFLINE)) {
-//			byte buf[] = dp.getBytes();
-
 			dp.setRemoteAddress(getRemoteAddress());
 			Server.sendCommandPacket(dp);
-
-//			try {
-//				dp.setRemoteAddress(getRemoteAddress());
-//				Server.getServerChannel().send(ByteBuffer.wrap(buf), getRemoteAddress());
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
 		}
 	}
 

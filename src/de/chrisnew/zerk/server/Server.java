@@ -55,8 +55,6 @@ public class Server {
 
 	private static DatagramSocket serverSocket = null;
 
-//	private static final BlockingQueue<CommandPacket> networkBacklog =  new LinkedBlockingQueue<>(); // new SynchronousQueue<>(true);
-
 	private static final NetChannel netChannel = new NetChannel(new NetChannelSendImpl() {
 		@Override
 		public void send(byte[] bytes, int len, SocketAddress remoteAddress) throws IOException {
@@ -65,6 +63,7 @@ public class Server {
 	});
 
 	protected static DatagramChannel channel = null;
+	protected static InetSocketAddress serverAddress = null;
 
 	public static void initTickers() {
 		// FIXME: we could merge those two threads into one
@@ -79,7 +78,6 @@ public class Server {
 
 				while (isServerState(ServerState.ONLINE)) {
 					try {
-//						dp = networkBacklog.poll(16, TimeUnit.MILLISECONDS);
 						dp = netChannel.getNetworkBacklog().poll(16, TimeUnit.MILLISECONDS);
 					} catch (InterruptedException e) {
 					}
@@ -91,8 +89,7 @@ public class Server {
 					Player serverPlayer = WorldState.getPlayerByCommandPacket(dp);
 
 					if (dp.getPacketClass() != PacketClass.CLIENT_CONNECT) {
-						if (serverPlayer == null) { // && !tryHandleOobPacket(dp)) {
-							// okay, strange, ignoring.
+						if (serverPlayer == null) {
 							continue;
 						}
 
@@ -111,7 +108,6 @@ public class Server {
 						break;
 
 					case CLIENT_SAY_C2S: // TODO spam check
-//						Player serverPlayer2 = WorldState.getPlayerByCommandPacket(dp);
 						WorldState.broadcastPacket(new CommandPacket(PacketClass.CLIENT_SAY).writeInteger(serverPlayer.getPlayerUniqueId()).writeString(dp.readString()));
 						break;
 
@@ -130,7 +126,7 @@ public class Server {
 						break;
 
 					case ENTITY_USE_ENTITY:
-						BaseEntity user = /*dp.readEntity()*/ serverPlayer.getEntity(), other = dp.readEntity();
+						BaseEntity user = serverPlayer.getEntity(), other = dp.readEntity();
 
 						if (WorldState.isEntityInWorld(other)) {
 							other.use(user);
@@ -141,10 +137,7 @@ public class Server {
 						} else {
 							Console.warn("tried to use non-existent entity");
 						}
-//						Player serverPlayer = WorldState.getPlayerByCommandPacket(dp);
 						serverPlayer.sendCommandPacket(WorldState.createEntityUpdateDataPacket(user));
-//						serverPlayer.sendDataPacket(WorldState.createEntityUpdateDataPacket(other)); // CR: update conflicts with remove
-//						serverPlayer.sendDataPacket(new CommandPacket(PacketClass.MESSAGE).writeString("You picked something up.")); // FIXME
 						break;
 
 					case NETWORK_PONG:
@@ -172,8 +165,6 @@ public class Server {
 
 						if (sa != null && receiveByteBuffer.hasRemaining()) {
 							receiveByteBuffer.flip();
-
-//							networkBacklog.put(new CommandPacket(receiveByteBuffer.array(), sa.getAddress(), sa.getPort()));
 
 							netChannel.recv(receiveByteBuffer.array(), sa);
 						}
@@ -223,7 +214,6 @@ public class Server {
 			Console.fatal("could not create udp channel!", e);
 		}
 
-
 		Zerk.getScheduler().scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -243,14 +233,14 @@ public class Server {
 	}
 
 	private static void registerCommands() {
-		LocalInputCommand.registerLocalInputCommand(new LocalInputCommand("sv_resent_el", new ConsoleCommand() {
+		new LocalInputCommand("sv_resent_el", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
 				entityFullSyncListTicker = 10;
 			};
-		}));
+		});
 
-		LocalInputCommand.registerLocalInputCommand(new LocalInputCommand("sv_entitylist", new ConsoleCommand() {
+		new LocalInputCommand("sv_entitylist", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
 				if (isServerState(ServerState.OFFLINE)) {
@@ -261,27 +251,43 @@ public class Server {
 					Console.info("#" + entity.getId() + ", " + entity.getClassname() + ", " + entity.getPosition());
 				}
 			}
-		}));
+		});
 
-		LocalInputCommand.registerLocalInputCommand(new LocalInputCommand("sv_playerlist", new ConsoleCommand() {
+		new LocalInputCommand("sv_status", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
 				if (isServerState(ServerState.OFFLINE)) {
+					Console.info("Server: offline.");
 					return;
 				}
+
+				Console.info("Server: online, map = " + WorldState.getCurrentMapName());
 
 				for (Player player : WorldState.getPlayerList()) {
 					Console.info("#" + player.getPlayerUniqueId() + ", " + player.getName() + ", " + player.getEntity().getPosition() + ", " + player.getRemoteAddress() + ", " + player.getLatency() + "ms");
 				}
 			}
-		}));
+		});
 
-//		new LocalInputCommand("sv_serverlist", new ConsoleCommand() {
-//			@Override
-//			public void call(String[] args) {
-//
-//			}
-//		});
+		new LocalInputCommand("sv_start", new ConsoleCommand() {
+			@Override
+			public void call(String[] args) {  // TODO: default map
+				int port = 21337;
+
+				if (args.length > 2) {
+					try {
+						port = Integer.parseInt(args[2]);
+					} catch (Exception e) {
+						Console.warn("unable to parse port number: " + args[1]);
+					}
+				} else if (args.length > 1) {
+					Console.info("Starting the game with map '" + args[1] + "'...");
+					Server.start(port, args[1]);
+				} else {
+					Console.info(args[0] + " <mapname> [<port>]");
+				}
+			}
+		});
 	}
 
 	private static int entityFullSyncListTicker = 10;
@@ -309,17 +315,18 @@ public class Server {
 		}
 	}
 
-	public static void start(int port) {
+	public static void start(int port, String mapname) {
 		try {
 			if (serverSocket == null) {
 				serverSocket = channel.socket();
-				serverSocket.bind(new InetSocketAddress(port));
+				serverAddress = new InetSocketAddress(port);
+				serverSocket.bind(serverAddress);
 				serverSocket.setBroadcast(true);
 			}
 
 			setServerState(ServerState.ONLINE);
 
-			WorldState.loadMap("blah");
+			WorldState.loadMap(mapname);
 
 			// uh, let's break down if there's no player spawn point.
 			if (WorldState.getEntityListByType(PlayerSpawn.class).size() == 0) {
@@ -342,14 +349,6 @@ public class Server {
 		return serverSocket;
 	}
 
-//	public static void receiveViaLoopback(CommandPacket dp) {
-//		networkBacklog.add(dp);
-//	}
-
-//	public static DatagramChannel getServerChannel() {
-//		return channel;
-//	}
-
 	public static void sendCommandPacket(CommandPacket cmd) {
 		netChannel.sendCommandPacket(cmd);
 	}
@@ -358,5 +357,9 @@ public class Server {
 		if (isServerState(ServerState.ONLINE)) {
 			WorldState.broadcastPacket(new CommandPacket(PacketClass.CLIENT_DISCONNECT).writeString("Server shutting down."));
 		}
+	}
+
+	public static InetSocketAddress getServerAddress() {
+		return serverAddress;
 	}
 }

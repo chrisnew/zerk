@@ -53,7 +53,6 @@ public class Client {
 	}
 
 	private static void cleanupAfterDisconnect() {
-//		clientEntities.clear();
 		LocalPlayer.cleanup();
 
 		if (GameWindow.hasGameWindow()) {
@@ -94,22 +93,10 @@ public class Client {
 		new LocalInputCommand("start", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
-				Console.info("Starting the game.");
-
-				int port = 21337;
-
-				if (args.length > 1) {
-					try {
-						port = Integer.parseInt(args[1]);
-					} catch (Exception e) {
-						Console.warn("unable to parse port number: " + args[1]);
-					}
-				}
-
-				Server.start(port);
+				LocalInputCommand.getCommandByName("sv_start").call(args);
 
 				if (Server.isServerState(ServerState.ONLINE)) {
-					Client.connect("[::1]:" + port);
+					Client.connect("localhost:" + Server.getServerAddress().getPort());
 				}
 			}
 		});
@@ -128,7 +115,7 @@ public class Client {
 				if (args[1].matches("^\\[.*\\]:[0-9]+$")) {
 					connect(args[1]);
 				} else {
-					connect(args[1] + ":21337");
+					connect("[" + args[1] + "]:21337");
 				}
 			}
 		});
@@ -151,31 +138,12 @@ public class Client {
 	});
 
 	public static DatagramPacket sendCommandPacket(CommandPacket cmd) {
-//		if (!isClientState(ClientState.DISCONNECTED)) {
-//			byte buf[] = dp.getBytes();
-//
-//			DatagramPacket dgp = new DatagramPacket(buf, buf.length);
-//
-//			try {
-//				clientConnection.send(dgp);
-//				Console.debug("sent DatagramPacket via clientConnection. length = " + buf.length);
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//
-//			return dgp;
-//		}
-//
-//		return null;
-
 		if (!isClientState(ClientState.DISCONNECTED)) {
 			netChannel.sendCommandPacket(cmd);
 		}
 
 		return null;
 	}
-
-//	private static final ConcurrentLinkedQueue<CommandPacket> networkBacklog = new ConcurrentLinkedQueue<>();
 
 	private static int retryCounter = 0;
 	private static int nextRetry = 0;
@@ -253,7 +221,6 @@ public class Client {
 						clientConnection.receive(p);
 
 						netChannel.recv(p.getData(), (InetSocketAddress) p.getSocketAddress());
-//						networkBacklog.add(new CommandPacket(p.getData(),  p.getAddress(), p.getPort()));
 
 						Console.debug("added CommandPacket to client backlog.");
 					} catch (IOException e) {
@@ -289,7 +256,6 @@ public class Client {
 		if (!isClientState(ClientState.DISCONNECTED)) {
 			CommandPacket dp;
 
-//			while ((dp = networkBacklog.poll()) != null) {
 			while ((dp = netChannel.getNetworkBacklog().poll()) != null) {
 				Console.debug("backlogged message");
 
@@ -314,7 +280,6 @@ public class Client {
 						Client.loadMap(dp.readString());
 						LocalPlayer.setPlayerUniqueId(dp.readInteger());
 						setClientState(ClientState.CONNECTED);
-//						LocalPlayer.setEntity((Player) dp.readEntity(clientEntities));
 						LocalPlayer.setEntity((Player) dp.readEntity(getGameMap().getEntities()));
 
 						for (int i = dp.readInteger(); i != 0; i--) {
@@ -342,7 +307,6 @@ public class Client {
 						for (int i = dp.readInteger(); i != 0; i--) {
 							BaseEntity entity = null;
 
-//							if ((entity = dp.readEntity(clientEntities)) instanceof Player) {
 							if ((entity = dp.readEntity(getGameMap().getEntities())) instanceof Player) {
 								if (GameWindow.hasGameWindow()) {
 									GameWindow.updateHelperViews();
@@ -388,7 +352,6 @@ public class Client {
 
 
 	public static void removeEntity(int entityId) {
-//		clientEntities.remove(entityId);
 		getGameMap().removeEntityById(entityId);
 	}
 
@@ -396,11 +359,7 @@ public class Client {
 		removeEntity(ent.getId());
 	}
 
-//	private static final HashMap<Integer, BaseEntity> clientEntities = new HashMap<>();
-
 	public static EntityCollection getEntities() {
-//		return new LinkedList<>(clientEntities.values());
-//		return new LinkedList<>(getGameMap().getEntities()); //.values());
 		return getGameMap().getEntities();
 	}
 
@@ -412,13 +371,7 @@ public class Client {
 
 	private static void loadMap(String mapName) {
 		gameMap.load(mapName);
-//		clientEntities.clear();
-//		clientEntities.putAll(gameMap.getEntities());
 	}
-
-//	public static void receiveViaLoopback(CommandPacket dp) {
-//		networkBacklog.add(dp);
-//	}
 
 	protected static Physics localPhysics = new Physics(gameMap);
 
