@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 
 import de.chrisnew.zerk.game.EntityCollection;
@@ -90,9 +92,10 @@ public class CommandPacket {
 	private ByteArrayOutputStream baos = null;
 	private ByteArrayInputStream bais = null;
 
-	private PacketClass packetClass = null;
 	private ObjectInputStream ois = null;
 	private ObjectOutputStream oos = null;
+
+	private PacketClass packetClass = null;
 
 	private InetAddress remoteAddress;
 	private int remotePort;
@@ -115,6 +118,25 @@ public class CommandPacket {
 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		if (oos != null) {
+			oos.close();
+		}
+
+		if (baos != null) {
+			baos.close();
+		}
+
+		if (ois != null) {
+			ois.close();
+		}
+
+		if (bais != null) {
+			bais.close();
 		}
 	}
 
@@ -333,6 +355,11 @@ public class CommandPacket {
 
 	public InetAddress getRemoteAddress() {
 		return remoteAddress;
+	}
+
+	public void setRemoteAddress(SocketAddress remoteAddress) {
+		this.remoteAddress = ((InetSocketAddress) remoteAddress).getAddress();
+		this.remotePort = ((InetSocketAddress) remoteAddress).getPort();
 	}
 
 	public int getRemotePort() {

@@ -1,16 +1,13 @@
 package de.chrisnew.zerk.server;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
-import java.nio.ByteBuffer;
 import java.util.Date;
 
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
-import de.chrisnew.zerk.net.NetChannel;
 import de.chrisnew.zerk.server.Server.ServerState;
 
 public class Player {
@@ -20,15 +17,11 @@ public class Player {
 
 	private int latency = -1;
 
-	private final NetChannel netChannel = new NetChannel();
-
 	private final int playerUniqueId = (int) Math.round(Math.random() * 1000000);
 
 	public Player(String name, InetAddress addr, int port) throws SocketException {
 		setName(name);
 		setRemoteAddress(addr, port);
-
-		netChannel.setRemoteAddress(getRemoteAddress());
 	}
 
 	public String getName() {
@@ -57,14 +50,18 @@ public class Player {
 
 	public void sendCommandPacket(CommandPacket dp) { //throws IOException {
 		if (!Server.isServerState(ServerState.OFFLINE)) {
-			byte buf[] = dp.getBytes();
+//			byte buf[] = dp.getBytes();
 
-			try {
-				Server.getServerChannel().send(ByteBuffer.wrap(buf), getRemoteAddress());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			dp.setRemoteAddress(getRemoteAddress());
+			Server.sendCommandPacket(dp);
+
+//			try {
+//				dp.setRemoteAddress(getRemoteAddress());
+//				Server.getServerChannel().send(ByteBuffer.wrap(buf), getRemoteAddress());
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 		}
 	}
 

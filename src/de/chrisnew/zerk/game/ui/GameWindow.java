@@ -126,7 +126,7 @@ public class GameWindow extends JFrame {
 
 	public void writeMessage(String message) {
 		consoleTextArea.append(message + "\n");
-		consoleTextArea.setCaretPosition(consoleTextArea.getText().length() - 1);
+		consoleTextArea.setCaretPosition(consoleTextArea.getText().length());
 	}
 
 	private static GameWindow gameWindow = null;

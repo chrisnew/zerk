@@ -3,11 +3,10 @@ package de.chrisnew.zerk.server;
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Date;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import de.chrisnew.zerk.Console;
@@ -22,6 +21,8 @@ import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.math.Vector2D;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
+import de.chrisnew.zerk.net.NetChannel;
+import de.chrisnew.zerk.net.NetChannel.NetChannelSendImpl;
 
 public class Server {
 	private static class ServerStartException extends Exception {
@@ -54,9 +55,16 @@ public class Server {
 
 	private static DatagramSocket serverSocket = null;
 
-	private static final BlockingQueue<CommandPacket> networkBacklog =  new LinkedBlockingQueue<>(); // new SynchronousQueue<>(true);
+//	private static final BlockingQueue<CommandPacket> networkBacklog =  new LinkedBlockingQueue<>(); // new SynchronousQueue<>(true);
 
-	private static DatagramChannel channel = null;
+	private static final NetChannel netChannel = new NetChannel(new NetChannelSendImpl() {
+		@Override
+		public void send(byte[] bytes, int len, SocketAddress remoteAddress) throws IOException {
+			channel.send(ByteBuffer.wrap(bytes, 0, len), remoteAddress);
+		}
+	});
+
+	protected static DatagramChannel channel = null;
 
 	public static void initTickers() {
 		// FIXME: we could merge those two threads into one
@@ -71,7 +79,8 @@ public class Server {
 
 				while (isServerState(ServerState.ONLINE)) {
 					try {
-						dp = networkBacklog.poll(16, TimeUnit.MILLISECONDS);
+//						dp = networkBacklog.poll(16, TimeUnit.MILLISECONDS);
+						dp = netChannel.getNetworkBacklog().poll(16, TimeUnit.MILLISECONDS);
 					} catch (InterruptedException e) {
 					}
 
@@ -82,7 +91,7 @@ public class Server {
 					Player serverPlayer = WorldState.getPlayerByCommandPacket(dp);
 
 					if (dp.getPacketClass() != PacketClass.CLIENT_CONNECT) {
-						if (serverPlayer == null && !tryHandleOobPacket(dp)) {
+						if (serverPlayer == null) { // && !tryHandleOobPacket(dp)) {
 							// okay, strange, ignoring.
 							continue;
 						}
@@ -164,7 +173,9 @@ public class Server {
 						if (sa != null && receiveByteBuffer.hasRemaining()) {
 							receiveByteBuffer.flip();
 
-							networkBacklog.put(new CommandPacket(receiveByteBuffer.array(), sa.getAddress(), sa.getPort()));
+//							networkBacklog.put(new CommandPacket(receiveByteBuffer.array(), sa.getAddress(), sa.getPort()));
+
+							netChannel.recv(receiveByteBuffer.array(), sa);
 						}
 
 						receiveByteBuffer.clear();
@@ -179,26 +190,26 @@ public class Server {
 		}).start();
 	}
 
-	public static void sendOobPacket(CommandPacket dp) {
-		try {
-			Server.getServerChannel().send(ByteBuffer.wrap(dp.getBytes()), new InetSocketAddress(dp.getRemoteAddress(), dp.getRemotePort()));
-		} catch (IOException e) {
-			// TODO put to retry list
-		}
-	}
+//	public static void sendOobPacket(CommandPacket dp) {
+//		try {
+//			Server.getServerChannel().send(ByteBuffer.wrap(dp.getBytes()), new InetSocketAddress(dp.getRemoteAddress(), dp.getRemotePort()));
+//		} catch (IOException e) {
+//			// TODO put to retry list
+//		}
+//	}
 
-	protected static boolean tryHandleOobPacket(CommandPacket dp) {
-		switch (dp.getPacketClass()) {
-		case OOB_QUERY:
-			sendOobPacket(new CommandPacket(PacketClass.OOB_QUERY_RESPONSE)
-				.writeString(WorldState.getCurrentMapName())
-				.writeInteger(WorldState.getPlayerList().size())
-			);
-			return true;
-		default:
-			return false;
-		}
-	}
+//	protected static boolean tryHandleOobPacket(CommandPacket dp) {
+//		switch (dp.getPacketClass()) {
+//		case OOB_QUERY:
+//			sendOobPacket(new CommandPacket(PacketClass.OOB_QUERY_RESPONSE)
+//				.writeString(WorldState.getCurrentMapName())
+//				.writeInteger(WorldState.getPlayerList().size())
+//			);
+//			return true;
+//		default:
+//			return false;
+//		}
+//	}
 
 	public static void init() {
 		setServerState(ServerState.OFFLINE);
@@ -331,12 +342,16 @@ public class Server {
 		return serverSocket;
 	}
 
-	public static void receiveViaLoopback(CommandPacket dp) {
-		networkBacklog.add(dp);
-	}
+//	public static void receiveViaLoopback(CommandPacket dp) {
+//		networkBacklog.add(dp);
+//	}
 
-	public static DatagramChannel getServerChannel() {
-		return channel;
+//	public static DatagramChannel getServerChannel() {
+//		return channel;
+//	}
+
+	public static void sendCommandPacket(CommandPacket cmd) {
+		netChannel.sendCommandPacket(cmd);
 	}
 
 	public static void shutdown() {

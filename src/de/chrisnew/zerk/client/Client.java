@@ -7,7 +7,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Date;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import de.chrisnew.zerk.Console;
 import de.chrisnew.zerk.ConsoleCommand;
@@ -21,11 +20,12 @@ import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
+import de.chrisnew.zerk.net.NetChannel;
+import de.chrisnew.zerk.net.NetChannel.NetChannelSendImpl;
 import de.chrisnew.zerk.server.Server;
 import de.chrisnew.zerk.server.Server.ServerState;
 
 public class Client {
-
 	public static enum ClientState {
 		DISCONNECTED,
 		CONNECTING,
@@ -143,26 +143,39 @@ public class Client {
 
 	private static DatagramSocket clientConnection = null;
 
-	public static DatagramPacket sendCommandPacket(CommandPacket dp) {
+	private static final NetChannel netChannel = new NetChannel(new NetChannelSendImpl() {
+		@Override
+		public void send(byte[] bytes, int len, SocketAddress remoteAddress) throws IOException {
+			clientConnection.send(new DatagramPacket(bytes, len));
+		}
+	});
+
+	public static DatagramPacket sendCommandPacket(CommandPacket cmd) {
+//		if (!isClientState(ClientState.DISCONNECTED)) {
+//			byte buf[] = dp.getBytes();
+//
+//			DatagramPacket dgp = new DatagramPacket(buf, buf.length);
+//
+//			try {
+//				clientConnection.send(dgp);
+//				Console.debug("sent DatagramPacket via clientConnection. length = " + buf.length);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//
+//			return dgp;
+//		}
+//
+//		return null;
+
 		if (!isClientState(ClientState.DISCONNECTED)) {
-			byte buf[] = dp.getBytes();
-
-			DatagramPacket dgp = new DatagramPacket(buf, buf.length);
-
-			try {
-				clientConnection.send(dgp);
-				Console.debug("sent DatagramPacket via clientConnection. length = " + buf.length);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			return dgp;
+			netChannel.sendCommandPacket(cmd);
 		}
 
 		return null;
 	}
 
-	private static final ConcurrentLinkedQueue<CommandPacket> networkBacklog = new ConcurrentLinkedQueue<>();
+//	private static final ConcurrentLinkedQueue<CommandPacket> networkBacklog = new ConcurrentLinkedQueue<>();
 
 	private static int retryCounter = 0;
 	private static int nextRetry = 0;
@@ -239,7 +252,8 @@ public class Client {
 					try {
 						clientConnection.receive(p);
 
-						networkBacklog.add(new CommandPacket(p.getData(),  p.getAddress(), p.getPort()));
+						netChannel.recv(p.getData(), (InetSocketAddress) p.getSocketAddress());
+//						networkBacklog.add(new CommandPacket(p.getData(),  p.getAddress(), p.getPort()));
 
 						Console.debug("added CommandPacket to client backlog.");
 					} catch (IOException e) {
@@ -275,7 +289,8 @@ public class Client {
 		if (!isClientState(ClientState.DISCONNECTED)) {
 			CommandPacket dp;
 
-			while ((dp = networkBacklog.poll()) != null) {
+//			while ((dp = networkBacklog.poll()) != null) {
+			while ((dp = netChannel.getNetworkBacklog().poll()) != null) {
 				Console.debug("backlogged message");
 
 				try {
@@ -401,9 +416,9 @@ public class Client {
 //		clientEntities.putAll(gameMap.getEntities());
 	}
 
-	public static void receiveViaLoopback(CommandPacket dp) {
-		networkBacklog.add(dp);
-	}
+//	public static void receiveViaLoopback(CommandPacket dp) {
+//		networkBacklog.add(dp);
+//	}
 
 	protected static Physics localPhysics = new Physics(gameMap);
 
