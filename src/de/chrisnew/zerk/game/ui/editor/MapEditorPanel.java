@@ -33,7 +33,7 @@ import de.chrisnew.zerk.math.Vector2D;
 public class MapEditorPanel extends JPanel {
 	private static final long serialVersionUID = -3805313706121161666L;
 
-	private static final GameMap gameMap = new GameMap();
+	private final GameMap gameMap;
 
 	protected Point2D lastMousePosition = new Point2D.Float(0, 0);
 	protected Point2D centerPosition = new Point2D.Float(0, 0);
@@ -122,6 +122,10 @@ public class MapEditorPanel extends JPanel {
 		public void mouseClicked(MouseEvent e) {
 			lastMousePosition.setLocation(e.getX(), e.getY());
 
+			if (e.getClickCount() == 2) {
+				handleDoubleClick(e.getX(), e.getY());
+			}
+
 			repaint();
 
 			super.mouseClicked(e);
@@ -138,7 +142,21 @@ public class MapEditorPanel extends JPanel {
 		}
 	}
 
-	public MapEditorPanel() {
+	public void reset() {
+		lastMousePosition.setLocation(0, 0);
+		centerPosition.setLocation(0, 0);
+		selectedObject = null;
+		usableObjects.clear();
+		for (EntityWindow ew : entityWindows.values()) {
+			ew.close();
+			ew.dispose();
+		}
+		gameMap.reset();
+	}
+
+	public MapEditorPanel(GameMap gameMap) {
+		this.gameMap = gameMap;
+
 		setBackground(Color.BLACK);
 
 		MepMouseListener listener = new MepMouseListener();
@@ -146,9 +164,36 @@ public class MapEditorPanel extends JPanel {
 		addMouseListener(listener);
 		addMouseMotionListener(listener);
 		addMouseWheelListener(listener);
+	}
 
-		gameMap.reset();
-//		gameMap.load(); // FIXME
+	private final HashMap<Integer, EntityWindow> entityWindows = new HashMap<>();
+
+	protected void handleDoubleClick(int x, int y) {
+		for (Map.Entry<Object, Rectangle2D> entry: usableObjects.entrySet()) {
+			if (entry.getValue().contains(x, y)) {
+				if (entry.getKey() instanceof Area) {
+//					area = (Area) entry.getKey();
+				} else if (entry.getKey() instanceof BaseEntity) {
+					showEntityWindow((BaseEntity) entry.getKey());
+				}
+
+				break;
+			}
+		}
+	}
+
+	private void showEntityWindow(BaseEntity entity) {
+		EntityWindow ew = entityWindows.get(entity.getId());
+
+		if (ew == null) {
+			ew = new EntityWindow(entity);
+
+			ew.setLocationRelativeTo(this);
+			entityWindows.put(entity.getId(), ew);
+		}
+
+		ew.setVisible(true);
+		ew.requestFocus();
 	}
 
 	private JPopupMenu createPopupMenu(final int x, final int y) {
@@ -185,6 +230,14 @@ public class MapEditorPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				selectedObject = null;
+
+				EntityWindow ew = entityWindows.get(entity.getId());
+
+				if (ew != null) {
+					ew.close();
+					entityWindows.remove(entity.getId());
+				}
+
 				gameMap.removeEntityById(entity.getId());
 
 				repaint();
@@ -464,6 +517,8 @@ public class MapEditorPanel extends JPanel {
 	}
 
 	public void load() {
+		reset();
+
 		try {
 			gameMap.load();
 		} catch (IOException e) {

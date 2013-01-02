@@ -14,11 +14,15 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import de.chrisnew.zerk.ConsoleCommand;
+import de.chrisnew.zerk.game.GameMap;
 import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;
 
 public class ZerkEdit extends JFrame {
-	private final MapEditorPanel mapEditorPane = new MapEditorPanel();
+	private final GameMap gameMap = new GameMap();
+	private final MapEditorPanel mapEditorPane = new MapEditorPanel(gameMap);
+
+	private TextSegmentList tsl;
 
 	public ZerkEdit() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(GameWindow.class.getResource("zerk.png")));
@@ -71,7 +75,19 @@ public class ZerkEdit extends JFrame {
 		JMenuItem mntmOpenScriptEditor = new JMenuItem("Open Script Editor");
 		mnScript.add(mntmOpenScriptEditor);
 
+//		final
 		JMenuItem mntmOpenTextEditor = new JMenuItem("Open Text Editor");
+		mntmOpenTextEditor.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (tsl == null) {
+					tsl = new TextSegmentList(gameMap);
+				}
+
+				tsl.setVisible(true);
+				tsl.requestFocus();
+			}
+		});
 		mnScript.add(mntmOpenTextEditor);
 
 		JMenu mnWindow = new JMenu("Window");

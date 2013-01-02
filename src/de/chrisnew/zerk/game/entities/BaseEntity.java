@@ -1,5 +1,7 @@
 package de.chrisnew.zerk.game.entities;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,14 +114,18 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 
 	}
 
-	@AttributeGetter("health")
+	@AttributeGetter(value = "health", system = true)
 	public int getHealth() {
 		return health;
 	}
 
-	@AttributeSetter("health")
 	public void setHealth(int health) {
 		this.health = health;
+	}
+
+	@AttributeSetter("health")
+	public void setHealth(String health) {
+		setHealth(Integer.parseInt(health));
 	}
 
 	public Vector2D getPosition() {
@@ -134,7 +140,7 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 		setPosition(new Vector2D(x, y));
 	}
 
-	@AttributeGetter("name")
+	@AttributeGetter(value = "name", system = true)
 	public String getName() {
 		return name;
 	}
@@ -144,7 +150,57 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 		this.name = name;
 	}
 
-	@AttributeGetter("id")
+	public Map<String, String> getAttributes() {
+		return getAttributes(true);
+	}
+
+	public String getAttribute(String name) {
+		Map<String, String> attrs = getAttributes();
+
+		return attrs.get(name);
+	}
+
+	public Map<String, String> getAttributes(boolean skipSystemAttributes) {
+		Map<String, String> attrs = new HashMap<>();
+
+		for (Method method : getClass().getMethods()) {
+			if (method.isAnnotationPresent(AttributeGetter.class)) {
+				AttributeGetter meta = method.getAnnotation(AttributeGetter.class);
+
+				if (meta.system()) {
+					continue;
+				}
+
+				try {
+					attrs.put(meta.value(), method.invoke(this, new Object[]{}).toString());
+				} catch (IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e) {
+					attrs.put(meta.value(), "");
+				}
+			}
+		}
+
+		return attrs;
+	}
+
+	public void setAttribute(String key, String value) {
+		// FIXME: speed up
+		for (Method method : getClass().getMethods()) {
+			if (method.isAnnotationPresent(AttributeSetter.class)) {
+				AttributeSetter meta = method.getAnnotation(AttributeSetter.class);
+
+				if (meta.value().equalsIgnoreCase(key)) {
+					try {
+						method.invoke(this, new Object[]{value});
+					} catch (IllegalAccessException | IllegalArgumentException
+							| InvocationTargetException e) {
+					}
+				}
+			}
+		}
+	}
+
+	@AttributeGetter(value = "id", system = true)
 	final public int getId() {
 		return entityId;
 	}
