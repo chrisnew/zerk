@@ -162,7 +162,7 @@ public class WorldState {
 
 	private static final GameMap gameMap = new GameMap();
 
-	public static synchronized void loadMap(String mapName) {
+	public static synchronized void loadMap(String mapName) throws IOException {
 		gameMap.load(mapName);
 	}
 

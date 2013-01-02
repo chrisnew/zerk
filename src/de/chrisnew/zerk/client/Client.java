@@ -369,7 +369,7 @@ public class Client {
 		return gameMap;
 	}
 
-	private static void loadMap(String mapName) {
+	private static void loadMap(String mapName) throws IOException {
 		gameMap.load(mapName);
 	}
 

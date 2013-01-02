@@ -1,7 +1,11 @@
 package de.chrisnew.zerk.game;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.chrisnew.zerk.game.entities.BaseEntity;
@@ -11,6 +15,8 @@ import de.chrisnew.zerk.game.entities.PlayerSpawn;
 import de.chrisnew.zerk.game.sandbox.Sandbox;
 import de.chrisnew.zerk.math.Line2D;
 import de.chrisnew.zerk.math.Vector2D;
+import de.chrisnew.zerk.net.CommandPacket;
+import de.chrisnew.zerk.net.SimpleSerializable;
 
 /**
  * GameMap is the hub for areas, entities and walls.
@@ -19,8 +25,11 @@ import de.chrisnew.zerk.math.Vector2D;
  *
  */
 public class GameMap {
-	public class TextSegment {
-		private String id, title, content;
+	public class TextSegment implements SimpleSerializable {
+		private String id = "unknown", title = "unnamed", content = "";
+
+		public TextSegment() {
+		}
 
 		public TextSegment(String id, String title, String content) {
 			setId(id);
@@ -51,7 +60,23 @@ public class GameMap {
 		public void setContent(String content) {
 			this.content = content;
 		}
+
+		@Override
+		public void serialize(CommandPacket dp) {
+			dp.writeString(getId());
+			dp.writeString(getTitle());
+			dp.writeString(getContent());
+		}
+
+		@Override
+		public void unserialize(CommandPacket dp) {
+			setId(dp.readString());
+			setTitle(dp.readString());
+			setContent(dp.readString());
+		}
 	}
+
+	private static final byte VERSION = 1;
 
 	private final AtomicInteger entityIdCounter = new AtomicInteger();
 	private final Sandbox sandbox = new Sandbox(this);
@@ -93,29 +118,102 @@ public class GameMap {
 		walls.clear();
 	}
 
-	public void load() {
-		reset();
-
-		// TODO
-		loadFakeData();
-	}
-
-	public void load(String mapName) {
+	public void load(String mapName) throws IOException {
 		setName(mapName);
 
 		load();
 	}
 
-	public void save(String mapName) {
+	public void save(String mapName) throws IOException {
 		setName(mapName);
 
 		save();
 	}
 
-	public void save() {
+	public void compact() {
 		// TODO
+		// 1. remove invisible and unreachable areas, entities and walls
+		// 2. improve lines, merge lines which are connected
 	}
 
+	public void save() throws IOException {
+		FileOutputStream fos = new FileOutputStream("base/maps/" + getName() + ".map");
+
+		CommandPacket blob = new CommandPacket(null, fos);
+		blob.writeByte(VERSION);
+
+		blob.writeInteger(getAreas().size());
+
+		for (Area area : getAreas()) {
+			blob.writeSimpleSerializable(area);
+		}
+
+		blob.writeInteger(getEntities().size());
+
+		for (BaseEntity entity : getEntities()) {
+			blob.writeEntity(entity);
+		}
+
+		blob.writeInteger(getWalls().size());
+
+		for (Wall wall : getWalls()) {
+			blob.writeSimpleSerializable(wall);
+		}
+
+		blob.writeInteger(textSegments.size());
+
+		for (TextSegment ts : textSegments.values()) {
+			blob.writeSimpleSerializable(ts);
+		}
+
+		fos.close();
+	}
+
+	public void load() throws IOException {
+		reset();
+
+		FileInputStream fis = new FileInputStream("base/maps/" + getName() + ".map");
+
+		CommandPacket blob = new CommandPacket(fis, null);
+
+		int version = blob.readByte();
+
+		if (version != VERSION) {
+			throw new IOException("incorrect version. got " + version + ", expected " + VERSION);
+		}
+
+		for (int i = blob.readInteger(); i != 0; i--) {
+			Area area = new Area();
+
+			blob.readSimpleSerializable(area);
+
+			addArea(area);
+		}
+
+		for (int i = blob.readInteger(); i != 0; i--) {
+			blob.readEntity(entities);
+		}
+
+		for (int i = blob.readInteger(); i != 0; i--) {
+			Wall wall = new Wall();
+
+			blob.readSimpleSerializable(wall);
+
+			addWall(wall);
+		}
+
+		for (int i = blob.readInteger(); i != 0; i--) {
+			TextSegment ts = new TextSegment();
+
+			blob.readSimpleSerializable(ts);
+
+			addTextSegment(ts);
+		}
+
+		fis.close();
+	}
+
+	@SuppressWarnings("unused")
 	private void loadFakeData() {
 		PlayerSpawn ps = new PlayerSpawn();
 		ps.setPosition(1, 1);
@@ -138,7 +236,7 @@ public class GameMap {
 		d1.setPosition(13, 13);
 		addEntity(d1);
 
-		Area a1 = new Area(new Vector2D(0, 0), new Vector2D(0, 5), new Vector2D(5, 0));
+		Area a1 = new Area(new Vector2D(0, 0), new Vector2D(5, 0), new Vector2D(0, 5));
 		a1.setAreaName("Home");
 		addArea(a1);
 
@@ -208,7 +306,11 @@ public class GameMap {
 	}
 
 	public void removeEntityById(int entityId) {
-		entities.remove(entityId);
+		for (BaseEntity entity : getEntities()) {
+			if (entity.getId() == entityId) {
+				entities.remove(entity);
+			}
+		}
 	}
 
 	public BaseEntity getEntityById(int id) {
@@ -243,5 +345,9 @@ public class GameMap {
 
 	public void addTextSegment(TextSegment textSegment) {
 		textSegments.put(textSegment.getId(), textSegment);
+	}
+
+	public List<TextSegment> getTextSegments() {
+		return new LinkedList<>(textSegments.values());
 	}
 }

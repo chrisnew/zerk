@@ -17,9 +17,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import de.chrisnew.zerk.Console;
 
 public class NetChannel {
+	public static class NetChannelException extends IOException {
+		public NetChannelException(String string) {
+			super(string);
+		}
+
+		private static final long serialVersionUID = -5048713320052422200L;
+	}
+
 	public static interface NetChannelSendImpl {
 		public void send(byte[] bytes, int len, SocketAddress remoteAddress) throws IOException;
 	}
+
+	private static final byte[] VERSION = new byte[] {1, 0};
 
 	private static class ReliableNetCommandPacket {
 		private final CommandPacket cmd;
@@ -116,6 +126,8 @@ public class NetChannel {
 
 			byte b[] = cmd.getBytes();
 
+			oos.writeByte(VERSION[0]);
+			oos.writeByte(VERSION[1]);
 			oos.writeByte(RNCMD_STDPACK);
 			oos.writeInt(rncmd.getSequenceNumber());
 			oos.write(calculateChecksum(b));
@@ -129,6 +141,7 @@ public class NetChannel {
 			oos.close();
 			baos.close();
 		} catch(IOException e) {
+			// TODO add to retry-list
 		}
 	}
 
@@ -159,6 +172,13 @@ public class NetChannel {
 		ByteArrayInputStream bais = new ByteArrayInputStream(receiveByteBuffer);
 		ObjectInputStream ois = new ObjectInputStream(bais);
 
+		byte vmajor = ois.readByte();
+		byte vminor = ois.readByte();
+
+		if ((vmajor * 256) + vminor < (VERSION[0] * 256) + VERSION[1]) {
+			return;
+		}
+
 		byte type = ois.readByte();
 		int rsqnr = ois.readInt();
 
@@ -166,6 +186,7 @@ public class NetChannel {
 
 		if (rsqnr > recvSqnr.get()) {
 			Console.warn("missing packets! rsqnr = " + rsqnr + ", recvSqnr = " + recvSqnr.get()); // TODO
+			return;
 		}
 
 		switch (type) {
@@ -177,7 +198,7 @@ public class NetChannel {
 			int l = ois.readShort();
 
 			if (l > (65536 - 2 - 4*4 - 4 - 1)) {
-				throw new IOException("recv(): invalid payload length");
+				throw new NetChannelException("recv(): invalid payload length");
 			}
 
 			byte b[] = new byte[l];

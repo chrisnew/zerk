@@ -1,5 +1,6 @@
 package de.chrisnew.zerk.game.entities;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,7 +27,7 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	private static final Map<String, Class<? extends BaseEntity>> entityClasses = new HashMap<>();
 
 	/*
-	 * register all instanciatable entity classes here:
+	 * register all instantiatable entity classes here:
 	 */
 	static {
 		entityClasses.put("Book", Book.class);
@@ -37,6 +38,10 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 
 	public static final Class<? extends BaseEntity> getEntityClassByClassname(String classname) {
 		return entityClasses.get(classname);
+	}
+
+	public static final Collection<Class<? extends BaseEntity>> getEntityClasses() {
+		return entityClasses.values();
 	}
 
 	public static enum State {
@@ -153,7 +158,7 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	}
 
 	public boolean equals(BaseEntity obj) {
-		return getId() == obj.getId(); // || super.equals(obj);
+		return getId() == obj.getId();
 	}
 
 	final protected void emitSound(float volume, String sound) {

@@ -1,6 +1,8 @@
 package de.chrisnew.zerk.math;
 
 public class Vector2D {
+	public static final Vector2D ORIGIN = new Vector2D(0, 0);
+
 	private float x, y;
 
 	public Vector2D() {

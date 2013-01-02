@@ -30,7 +30,9 @@ public class EntityCollection implements Collection<BaseEntity> {
 
 	@Override
 	public Iterator<BaseEntity> iterator() {
-		return backend.iterator();
+		synchronized (backend) {
+			return backend.iterator();
+		}
 	}
 
 	@Override

@@ -1,6 +1,8 @@
 package de.chrisnew.zerk.game.ui.editor;
 
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
@@ -9,8 +11,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 
 import de.chrisnew.zerk.ConsoleCommand;
@@ -18,7 +18,7 @@ import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;
 
 public class ZerkEdit extends JFrame {
-	private final MapEditorPane mapEditorPane = new MapEditorPane();
+	private final MapEditorPanel mapEditorPane = new MapEditorPanel();
 
 	public ZerkEdit() {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(GameWindow.class.getResource("zerk.png")));
@@ -33,10 +33,22 @@ public class ZerkEdit extends JFrame {
 
 		JMenuItem mntmNewMenuItem = new JMenuItem("Open Map...");
 		mntmNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mapEditorPane.load();
+			}
+		});
 		mnEditor.add(mntmNewMenuItem);
 
 		JMenuItem mntmSaveMap = new JMenuItem("Save");
 		mntmSaveMap.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+		mntmSaveMap.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				mapEditorPane.save();
+			}
+		});
 		mnEditor.add(mntmSaveMap);
 
 		JMenuItem mntmSaveAs = new JMenuItem("Save as...");
@@ -75,14 +87,16 @@ public class ZerkEdit extends JFrame {
 		mnWindow.add(mntmShowWallList);
 		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
 
-		JSplitPane splitPane = new JSplitPane();
-		splitPane.setOneTouchExpandable(true);
-		getContentPane().add(splitPane);
+//		JSplitPane splitPane = new JSplitPane();
+//		splitPane.setOneTouchExpandable(true);
+//		getContentPane().add(splitPane);
+//
+//		JTree tree = new JTree();
+//		splitPane.setRightComponent(tree);
+//
+//		splitPane.setLeftComponent(mapEditorPane);
 
-		JTree tree = new JTree();
-		splitPane.setRightComponent(tree);
-
-		splitPane.setLeftComponent(mapEditorPane);
+		getContentPane().add(mapEditorPane);
 
 		setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 

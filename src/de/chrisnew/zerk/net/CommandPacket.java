@@ -3,8 +3,10 @@ package de.chrisnew.zerk.net;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -65,8 +67,16 @@ public class CommandPacket {
 		CLIENT_SAY_C2S(10),
 		CLIENT_SAY(11),
 
+		CLIENT_DROP(14),
+		CLIENT_MESSAGE_UI_GAME(15),
+
 		NETWORK_PING(12),
-		NETWORK_PONG(13), CLIENT_DROP(14), CLIENT_MESSAGE_UI_GAME(15), OOB_QUERY(16), OOB_QUERY_RESPONSE(17);
+		NETWORK_PONG(13),
+
+		OOB_QUERY(16),
+		OOB_QUERY_RESPONSE(17),
+
+		INTERNAL_MAP(255);
 
 		private int val = 0;
 
@@ -89,8 +99,8 @@ public class CommandPacket {
 		}
 	}
 
-	private ByteArrayOutputStream baos = null;
-	private ByteArrayInputStream bais = null;
+	private OutputStream baos = null;
+	private InputStream bais = null;
 
 	private ObjectInputStream ois = null;
 	private ObjectOutputStream oos = null;
@@ -118,6 +128,19 @@ public class CommandPacket {
 
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	public CommandPacket(InputStream is, OutputStream os) throws IOException {
+		baos = os;
+		bais = is;
+
+		if (baos != null) {
+			oos = new ObjectOutputStream(baos);
+		}
+
+		if (bais != null) {
+			ois = new ObjectInputStream(bais);
 		}
 	}
 
@@ -282,23 +305,20 @@ public class CommandPacket {
 		return readEntity(null);
 	}
 
-	@SuppressWarnings("unchecked")
 	public BaseEntity readEntity(EntityCollection updatableList) {
 		try {
 			String classname = readString();
 			int id = readInteger();
 
-			BaseEntity be = updatableList != null ? updatableList.getEntityById(id) : null; // updatableList.get(id) : null;
+			BaseEntity be = updatableList != null ? updatableList.getEntityById(id) : null;
 
 			if (be == null) {
-//				Class<? extends BaseEntity> entityClass = (Class<? extends BaseEntity>) Class.forName("de.chrisnew.zerk.game.entities." + classname);
 				Class<? extends BaseEntity> entityClass = BaseEntity.getEntityClassByClassname(classname);
 
 				be = entityClass.newInstance();
 				be.setId(id);
 
 				if (updatableList != null) {
-//					updatableList.put(id, be);
 					updatableList.add(be);
 				}
 			}
@@ -309,7 +329,7 @@ public class CommandPacket {
 			be.unserialize(this);
 
 			return be;
-		} catch (/* ClassNotFoundException | */ InstantiationException | IllegalAccessException e) {
+		} catch (NullPointerException | InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -348,7 +368,7 @@ public class CommandPacket {
 
 	public byte[] getBytes() {
 		if (baos != null) {
-			return baos.toByteArray();
+			return ((ByteArrayOutputStream) baos).toByteArray();
 		}
 
 		return null;
