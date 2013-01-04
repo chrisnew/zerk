@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import de.chrisnew.zerk.Console;
+import de.chrisnew.zerk.console.Console;
 
 public class NetChannel {
 	public static class NetChannelException extends IOException {

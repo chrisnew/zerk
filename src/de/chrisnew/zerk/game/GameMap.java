@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.chrisnew.zerk.FileSystem;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.game.entities.Book;
 import de.chrisnew.zerk.game.entities.Dog;
@@ -137,7 +138,7 @@ public class GameMap {
 	}
 
 	public void save() throws IOException {
-		FileOutputStream fos = new FileOutputStream("base/maps/" + getName() + ".map");
+		FileOutputStream fos = FileSystem.write("maps/" + getName() + ".map");
 
 		CommandPacket blob = new CommandPacket(null, fos);
 		blob.writeByte(VERSION);
@@ -172,7 +173,7 @@ public class GameMap {
 	public void load() throws IOException {
 		reset();
 
-		FileInputStream fis = new FileInputStream("base/maps/" + getName() + ".map");
+		FileInputStream fis = FileSystem.read("maps/" + getName() + ".map");
 
 		CommandPacket blob = new CommandPacket(fis, null);
 

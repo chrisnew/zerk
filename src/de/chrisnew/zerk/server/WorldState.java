@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import de.chrisnew.zerk.Console;
+import de.chrisnew.zerk.console.Console;
 import de.chrisnew.zerk.game.GameMap;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.game.entities.InventoryItem;

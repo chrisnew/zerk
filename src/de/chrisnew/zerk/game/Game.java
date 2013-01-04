@@ -1,7 +1,7 @@
 package de.chrisnew.zerk.game;
 
-import de.chrisnew.zerk.Console;
-import de.chrisnew.zerk.ConsoleCommand;
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.game.entities.BaseEntity;
 import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.server.WorldState;

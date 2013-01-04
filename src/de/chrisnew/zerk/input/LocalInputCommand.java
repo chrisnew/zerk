@@ -6,12 +6,17 @@ import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import de.chrisnew.zerk.Console;
-import de.chrisnew.zerk.ConsoleCommand;
 import de.chrisnew.zerk.Zerk;
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.client.Client.ClientState;
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleCommand;
 
+/**
+ * @todo refactor to de.chrisnew.zerk.console
+ * @author CR
+ *
+ */
 public class LocalInputCommand {
 	private final ConsoleCommand cmd;
 	private final Client.ClientState clientState;

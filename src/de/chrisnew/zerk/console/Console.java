@@ -1,4 +1,4 @@
-package de.chrisnew.zerk;
+package de.chrisnew.zerk.console;
 
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.game.ui.GameWindow;
@@ -50,6 +50,11 @@ public class Console {
 	public static void fatal(String message, Throwable e) {
 		fatal(message);
 		e.printStackTrace();
+	}
+
+	public static void parseCommandLine(String[] args) {
+		// TODO Auto-generated method stub
+
 	}
 
 

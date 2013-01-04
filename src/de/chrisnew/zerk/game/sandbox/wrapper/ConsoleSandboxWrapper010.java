@@ -2,7 +2,7 @@ package de.chrisnew.zerk.game.sandbox.wrapper;
 
 import org.mozilla.javascript.Scriptable;
 
-import de.chrisnew.zerk.Console;
+import de.chrisnew.zerk.console.Console;
 import de.chrisnew.zerk.game.sandbox.AbstractSandboxWrapper;
 import de.chrisnew.zerk.game.sandbox.annotation.SandboxClass;
 import de.chrisnew.zerk.game.sandbox.annotation.SandboxMethod;

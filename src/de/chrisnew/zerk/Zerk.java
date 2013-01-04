@@ -5,6 +5,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.client.LocalPlayer;
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleVariable;
 import de.chrisnew.zerk.game.Game;
 import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.game.ui.editor.ZerkEdit;
@@ -17,13 +19,16 @@ public class Zerk {
 
 	private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
+	private static final ConsoleVariable<Boolean> dedicated = new ConsoleVariable<>("dedicated", false);
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		boolean dedicated = false; // TODO
-
 		Console.init();
+		Console.parseCommandLine(args);
+
+		boolean dedicated = Zerk.dedicated.getValue();
 
 		if (!dedicated) {
 			GameWindow.init();

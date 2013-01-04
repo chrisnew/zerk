@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import de.chrisnew.zerk.Console;
+import de.chrisnew.zerk.console.Console;
 
 /**
  * @author CR

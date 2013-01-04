@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import de.chrisnew.zerk.Console;
-import de.chrisnew.zerk.ConsoleCommand;
 import de.chrisnew.zerk.client.Client.ClientState;
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.game.Area;
 import de.chrisnew.zerk.game.EntityCollection;
 import de.chrisnew.zerk.game.VisibleEntity;

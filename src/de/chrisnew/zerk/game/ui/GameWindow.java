@@ -24,10 +24,10 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import de.chrisnew.zerk.ConsoleCommand;
 import de.chrisnew.zerk.Zerk;
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.client.LocalPlayer;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.game.entities.InventoryItem;
 import de.chrisnew.zerk.input.LocalInputCommand;
 

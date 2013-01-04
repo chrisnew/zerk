@@ -1,5 +1,7 @@
 package de.chrisnew.zerk;
 
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.input.LocalInputCommand;
 import de.chrisnew.zerk.math.Line2D;
 import de.chrisnew.zerk.math.Rectangle;

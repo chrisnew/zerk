@@ -1,6 +1,6 @@
 package de.chrisnew.zerk.game.entities;
 
-import de.chrisnew.zerk.Console;
+import de.chrisnew.zerk.console.Console;
 
 abstract public class InventoryItem extends Item {
 	@Override

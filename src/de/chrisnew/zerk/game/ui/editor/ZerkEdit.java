@@ -13,7 +13,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-import de.chrisnew.zerk.ConsoleCommand;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.game.GameMap;
 import de.chrisnew.zerk.game.ui.GameWindow;
 import de.chrisnew.zerk.input.LocalInputCommand;

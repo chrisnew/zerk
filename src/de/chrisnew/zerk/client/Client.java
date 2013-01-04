@@ -8,8 +8,8 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.util.Date;
 
-import de.chrisnew.zerk.Console;
-import de.chrisnew.zerk.ConsoleCommand;
+import de.chrisnew.zerk.console.Console;
+import de.chrisnew.zerk.console.ConsoleCommand;
 import de.chrisnew.zerk.game.EntityCollection;
 import de.chrisnew.zerk.game.Game;
 import de.chrisnew.zerk.game.GameMap;
