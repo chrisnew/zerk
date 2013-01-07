@@ -11,4 +11,8 @@ public @interface EntityInfo {
 	String name() default "";
 	String description() default "";
 
+	/**
+	 * by true, this entity class won't be shown in editor, but it's still creatable
+	 */
+	boolean virtual() default false;
 }

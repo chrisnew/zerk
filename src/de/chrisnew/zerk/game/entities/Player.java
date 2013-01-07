@@ -7,7 +7,7 @@ import de.chrisnew.zerk.game.VisibleEntity;
 import de.chrisnew.zerk.game.entities.annotation.EntityInfo;
 import de.chrisnew.zerk.net.CommandPacket;
 
-@EntityInfo(description="Entity which describes the actual player.")
+@EntityInfo(description="Entity which describes the actual player.", virtual = true)
 public class Player extends NPC implements VisibleEntity {
 	private String name = "Unnamed";
 

@@ -7,9 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.chrisnew.zerk.Ticker;
 import de.chrisnew.zerk.client.Client;
 import de.chrisnew.zerk.game.entities.annotation.AttributeGetter;
 import de.chrisnew.zerk.game.entities.annotation.AttributeSetter;
+import de.chrisnew.zerk.game.entities.annotation.EntityInfo;
 import de.chrisnew.zerk.math.Vector2D;
 import de.chrisnew.zerk.net.CommandPacket;
 import de.chrisnew.zerk.net.CommandPacket.PacketClass;
@@ -32,10 +34,31 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	 * register all instantiatable entity classes here:
 	 */
 	static {
-		entityClasses.put("Book", Book.class);
-		entityClasses.put("Dog", Dog.class);
-		entityClasses.put("PlayerSpawn", PlayerSpawn.class);
-		entityClasses.put("Player", Player.class);
+		registerEntityClass(Book.class);
+		registerEntityClass(Dog.class);
+		registerEntityClass(PlayerSpawn.class);
+		registerEntityClass(Player.class);
+		registerEntityClass(Key.class);
+	}
+
+	private static void registerEntityClass(Class<? extends BaseEntity> cls) {
+		entityClasses.put(cls.getSimpleName(), cls);
+	}
+
+	private final EntityInfo meta;
+
+	public BaseEntity() {
+		meta = getClass().getAnnotation(EntityInfo.class);
+	}
+
+	private final Ticker ticker = new Ticker();
+
+	protected Ticker getTicker() {
+		return ticker;
+	}
+
+	public final String getDescription() {
+		return meta.description();
 	}
 
 	public static final Class<? extends BaseEntity> getEntityClassByClassname(String classname) {
@@ -96,6 +119,7 @@ abstract public class BaseEntity implements SimpleSerializable, Comparable<BaseE
 	}
 
 	public void think() {
+		getTicker().tick();
 	}
 
 	public boolean canUse() {

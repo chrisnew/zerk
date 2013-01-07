@@ -137,7 +137,7 @@ public class GameMap {
 		// 2. improve lines, merge lines which are connected
 	}
 
-	public void save() throws IOException {
+	public synchronized void save() throws IOException {
 		FileOutputStream fos = FileSystem.write("maps/" + getName() + ".map");
 
 		CommandPacket blob = new CommandPacket(null, fos);
@@ -170,7 +170,7 @@ public class GameMap {
 		fos.close();
 	}
 
-	public void load() throws IOException {
+	public synchronized void load() throws IOException {
 		reset();
 
 		FileInputStream fis = FileSystem.read("maps/" + getName() + ".map");
@@ -212,6 +212,8 @@ public class GameMap {
 		}
 
 		fis.close();
+
+		entityIdCounter.set(entities.size());
 	}
 
 	@SuppressWarnings("unused")

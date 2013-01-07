@@ -28,6 +28,7 @@ import de.chrisnew.zerk.game.Area;
 import de.chrisnew.zerk.game.GameMap;
 import de.chrisnew.zerk.game.Wall;
 import de.chrisnew.zerk.game.entities.BaseEntity;
+import de.chrisnew.zerk.game.entities.annotation.EntityInfo;
 import de.chrisnew.zerk.math.Vector2D;
 
 public class MapEditorPanel extends JPanel {
@@ -201,6 +202,13 @@ public class MapEditorPanel extends JPanel {
 
 		for (final Class<? extends BaseEntity> entityClass : BaseEntity.getEntityClasses()) {
 			JMenuItem item = new JMenuItem("Create " + entityClass.getSimpleName());
+
+			EntityInfo meta = entityClass.getAnnotation(EntityInfo.class);
+
+			if (meta != null && meta.virtual()) {
+				continue;
+			}
+
 			item.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -218,6 +226,18 @@ public class MapEditorPanel extends JPanel {
 
 			menu.add(item);
 		}
+
+		menu.addSeparator();
+
+		JMenuItem newArea = new JMenuItem();
+		newArea.setText("Create Area");
+		newArea.setEnabled(false);
+		menu.add(newArea);
+
+		JMenuItem newWall = new JMenuItem();
+		newWall.setText("Create Wall");
+		newWall.setEnabled(false);
+		menu.add(newWall);
 
 		return menu;
 	}
@@ -391,7 +411,7 @@ public class MapEditorPanel extends JPanel {
 
 		String name = entity.getName();
 
-		g2d.drawString(entity.getClassname() + (!name.isEmpty() ? " (" + name + ")" : ""), (x + 1.5f) * zoom, y * zoom + fh);
+		g2d.drawString(entity.getClassname() + (!name.isEmpty() ? " (" + name + ")" : "") + " #" + entity.getId(), (x + 1.5f) * zoom, y * zoom + fh);
 	}
 
 	private void paintCurrentObjectInfo(Graphics2D g2d) {
@@ -413,9 +433,9 @@ public class MapEditorPanel extends JPanel {
 		double x = Math.floor(lastMousePosition.getX() / zoom);
 		double y = Math.floor(lastMousePosition.getY() / zoom);
 
-		coords.append(x);
+		coords.append((int) x + viewableArea[0]);
 		coords.append('/');
-		coords.append(y);
+		coords.append((int) y + viewableArea[1]);
 
 		g2d.setColor(Color.GRAY);
 		g2d.drawRect((int) (x * zoom), (int) (y * zoom), (int) (1 * zoom), (int) (1 * zoom));

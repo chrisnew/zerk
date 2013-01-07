@@ -43,6 +43,13 @@ public class LocalPlayer {
 	}
 
 	public static void init() {
+		new LocalInputCommand("map", new ConsoleCommand() {
+			@Override
+			public void call(String[] args) {
+				// TODO: draw a simple ascii art map
+			}
+		});
+
 		new LocalInputCommand("gogo", new ConsoleCommand() {
 			@Override
 			public void call(String[] args) {
